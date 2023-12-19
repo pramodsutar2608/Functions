@@ -1,0 +1,183 @@
+================================================================================
+                                    FUNCTIONS
+================================================================================
+
+- Functions is databse object & always return single value
+- 97% used to return single value
+- 3% for multiple value
+- We can call function within a Procedure
+- Code reuseability can be achieved
+- Generally we cannot use DML (Insert,Update,Delete) statements in Functions
+  except select.
+- Used in Mathematical operations
+
+--------------------------------------------------------------------------------
+Example:
+
+create or replace function f1(a varchar2)
+return varchar2
+is
+Begin 
+return a;
+End;
+
+------------------
+----Execute function---
+1) Method 1--> 
+
+select f1('Hello World') from dual;
+
+select f1(&string) from dual;
+
+2) Method 2---> Annonymous block
+
+Declare
+a varchar2(45);
+Begin
+a:=f1('Hello Block');
+dbms_output.put_line(a);
+end;
+
+3) Method 2---> Annonymous block
+
+Begin
+dbms_output.put_line(f1('Hi Dear'));
+end;
+
+set serverout on;
+
+--------------------------------------------------------------------------------
+Write a PL/SQL stored procedure for passing number return a message either even
+or odd based on that number.
+
+create or replace function f1(p_no number)
+return varchar2
+is
+
+Begin
+if mod(p_no,2)=0 then 
+return 'Even';
+
+else 
+return 'Odd';
+end if;
+
+End;
+
+---------
+
+select f1(21) from dual;
+
+-----
+
+Declare
+a varchar2(10);
+begin
+a:=f1(34);
+dbms_output.put_line(a);
+end;
+
+--------------------------------------------------------------------------------
+Write a PLSQL stored function for passing empno as parameter return gross salary
+from emp table based on following condition:
+gross:=sal+hra+da-pf
+
+hra-->10% of sal
+da-->20% of sal
+pf-->10% of sal
+
+----------------
+create or replace function f1(p_empno number)
+return number
+is
+v_sal number(10);
+hra number(10);
+da number(10);
+pf number(10);
+gross number(10);
+begin
+select max(sal) into v_sal from emp1
+where empno=p_empno;
+
+hra:=0.1*v_sal;
+da:=0.20*v_sal;
+pf:=0.10*v_sal;
+gross:=v_sal+hra+da+pf;
+
+return gross;
+end;
+
+-------------
+select * from emp1;
+
+select f1(1111) from dual;
+
+--------------------------------Paramaterless Function ------------------------------------------------
+create or replace function max_sal
+return number
+is
+v_sal number(10);
+begin
+select max(sal) into v_sal from emp1;
+return v_sal;
+end;
+
+-------
+select empno,ename,sal,max_sal from emp1;
+
+----------------------------------OUT PARAMETER----------------------------------------------
+
+Requirement:
+Take empno from user and return ename and job
+
+select * from emp1;
+
+------
+create or replace function f1(p_empno IN number,p_ename OUT varchar2,p_job OUT varchar2)
+return varchar2
+is
+begin
+select ename,job into p_ename,p_job from emp1
+where empno=p_empno;
+
+return p_ename;
+end;
+
+---------------
+
+declare
+a varchar2(20);
+b varchar2(20);
+c varchar2(20);
+begin
+c:=f1(7782,a,b);
+dbms_output.put_line('Employee Name-->'||a||', JOB-->'||b);
+end;
+
+---------------------------GET MULTIPLE RECORDS---------------------------------
+
+Requirement:
+Take deptno from user and return list of employees.
+
+create or replace function f1(p_deptno IN number)
+return varchar2
+is
+cursor c1 is select * from emp1
+where deptno=p_deptno;
+i c1%rowtype;
+a varchar2(4000);
+Begin
+for i in c1
+loop
+a:=a||' '||i.ename;
+end loop;
+return a;
+end;
+
+--------------
+select * from emp1 where deptno=10;
+
+select f1(10) from dual;
+
+select deptno,f1(deptno) from emp1
+group by deptno;
